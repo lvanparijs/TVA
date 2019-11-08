@@ -29,13 +29,13 @@ anti_plurality_voting = np.append(np.ones((m-1,n)),np.zeros((1,n))).reshape((m,n
 borda_voting = np.arange(0,m,1)
 borda_check = lambda x: x > 1
 
-preferences = np.arange(0,m,1)#MxN matrix of characters representing the voting alternatives and their ranking
+preferences = np.arange(1,m+1,1)#MxN matrix of characters representing the voting alternatives and their ranking
 np.random.shuffle(preferences)#Randomly shuffle
 
 #Generate borda & preferences matrix
 for i in range(1,n):
         borda_voting = np.append(borda_voting,np.arange(0,m,1)) #np.arange(start,stop,step_size)\
-        nxt_pref = np.arange(0,m,1)
+        nxt_pref = np.arange(1,m+1,1)
         np.random.shuffle(nxt_pref)
         preferences = np.append(preferences, nxt_pref)
 
@@ -56,6 +56,7 @@ def true_voting(pref_matrix, voting_scheme):
         chars = alphabet[0:m]
         cnts = np.zeros(m)
         if(np.any(borda_check(voting_scheme))): #if the voting scheme is Borda voting
+                print("BORDA")
                 for i in range(0,m):
                         for j in range(0, n):
                                 if(voting_scheme[i][j] >= 1):
@@ -63,13 +64,15 @@ def true_voting(pref_matrix, voting_scheme):
                 unique = np.arange(0,m,1)
                 unique = [chr(int(x) + 65) for x in unique]
                 counts = [int(x) for x in counts]
+                print(counts)
+                print(unique)
         else:
                 res_matrix = pref_matrix*voting_scheme
                 unique, cnts = np.unique(res_matrix, return_counts=True)
                 unique = [chr(int(x)+64) for x in unique]
 
-        for i in range(1, len(unique)):
-                counts[chars.index(unique[i])] = cnts[i]
+                for i in range(0, len(unique)):
+                        counts[chars.index(unique[i])] = cnts[i]
 
         #Zipping it and putting it in a dictionary for nice viewing purposes :)
         outcome = dict(zip(chars, counts))
@@ -114,6 +117,5 @@ print(preferences)
 print("=================")
 print("Voting scheme")
 print(borda_voting)
-#np.array([,,,,])
 true_voting(preferences,borda_voting)
 
