@@ -1,4 +1,6 @@
 import numpy as np
+import itertools
+
 
 m = 4 #Number of voting alternatives
 n = 5 #Number of voters
@@ -49,14 +51,23 @@ borda_voting = (m-1)-borda_voting.reshape((n,m)).T
 #Transformation done to correct dimensions
 preferences = preferences.reshape((n,m)).T
 
+def voting_analysis(pref_matrix, voting_scheme):
+        #Outputs 1 and 2 completed
+        outcome, happy = true_voting(pref_matrix, voting_scheme)
+        print("True Voting outcome: ")
+        print(outcome)
+        print("OVERALL HAPPINESS:")
+        print(happy)
+        #For each voter a strategic voter preference of form (modified_pref_list, Outcome of modification, Overall happiness, advantage for voter i)
+        strategic_voting(pref_matrix, voting_scheme, outcome)
+
 #Checks the true voting value
 def true_voting(pref_matrix, voting_scheme):
         #Counter for each alternative
         counts = np.zeros(m)
         chars = alphabet[0:m]
-        cnts = np.zeros(m)
+
         if(np.any(borda_check(voting_scheme))): #if the voting scheme is Borda voting
-                print("BORDA")
                 for i in range(0,m):
                         for j in range(0, n):
                                 if(voting_scheme[i][j] >= 1):
@@ -92,10 +103,32 @@ def true_voting(pref_matrix, voting_scheme):
         for i in range(0,n-1):
                 overall_happiness = overall_happiness + happiness_level(i,pref_matrix,ranked_outcome)
 
-        print("True Voting outcome: ")
-        print(outcome)
-        print("OVERALL HAPPINESS:")
-        print(overall_happiness)
+        return ranked_outcome, overall_happiness
+
+def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
+        #For each voter
+        for i in range(0,n):
+                happy1 = happiness_level(i, pref_matrix, ranked_outcome)
+
+                print("==========================")
+                print("VOTER " + str(i))
+                print("True Happiness: " + str(happy1))
+                print("True voting: " + str(pref_matrix[:, i]))
+                print("True Outcome: "+str(ranked_outcome))
+
+                pref = pref_matrix[:,i].copy()
+                pref = bullet_vote(pref)
+                new_pref_matrix = pref_matrix.copy()
+                new_pref_matrix[:,i] = pref
+                outcome, _ = true_voting(new_pref_matrix,voting_scheme)
+                happy2 = happiness_level(i, new_pref_matrix, outcome)
+
+                print("Strategic Happiness: "+str(happy2))
+                print("Bullet Voting: "+str(pref))
+                print("Bullet Outcome: "+str(outcome))
+                print(happy2>happy1)
+                print("==========================")
+
 
 #Ranks a given vector based on the values, ranked from 1->n with 1 being the worst rank
 def rank_vector(vector):
@@ -106,8 +139,18 @@ def rank_vector(vector):
 
 #Calculate happiness level based on weights(rank) and distance between preference and outcome
 def happiness_level(voter_id, pref_matrix, voting_outcome):
-        dist = np.multiply(voting_outcome,voting_outcome-pref_matrix[:,voter_id])
+        dist = np.multiply(pref_matrix[:,voter_id],voting_outcome-pref_matrix[:,voter_id])
         return 1/(1+abs(sum(dist))) #Keep happiness score within [0..1] interval
+
+def bullet_vote(pref_vector):
+        res  = pref_vector
+        res[res < max(res)] = 0
+        return res
+
+def get_alternatives(pref_vector):
+        return list(itertools.permutations(pref_vector))
+
+
 
 #Printing stuff for clarity
 print("Input:")
@@ -117,5 +160,6 @@ print(preferences)
 print("=================")
 print("Voting scheme")
 print(borda_voting)
-true_voting(preferences,borda_voting)
+#print(happiness_level(i, new_pref_matrix, outcome))
+voting_analysis(preferences,borda_voting)
 
