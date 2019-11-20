@@ -2,7 +2,7 @@ import numpy as np
 import itertools
 
 
-m = 6 #Number of voting alternatives
+m = 4 #Number of voting alternatives
 n = 6 #Number of voters
 
 alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -105,13 +105,15 @@ def true_voting(pref_matrix, voting_scheme):
         return ranked_outcome, overall_happiness
 
 def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
-        out = []
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print("STRATEGIC VOTING OPTIONS")
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~")
         #For each voter
         for i in range(0,n):
                 #Bullet
                 happy_orig = happiness_level(i, pref_matrix, ranked_outcome)
-
-                print("==========================")
+                print("===========================")
+                print("===========================")
                 print("VOTER " + str(i))
                 print("True Happiness: " + str(happy_orig))
                 print("True voting: " + str(pref_matrix[:, i]))
@@ -143,8 +145,8 @@ def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
                         happy_com = happy_com + [happiness_level(i, com_pref_matrix, outcome_com)]
 
                 best_i = happy_com.index(max(happy_com))
+
                 print("Comp Happiness: "+str(max(happy_com)))
-                print(pref_matrix[:,i].copy())
                 print("Comp Voting: "+str(poss[:,best_i]))
                 print("Comp Outcome: "+str(outcome_com))
                 print("==========================")
@@ -159,24 +161,41 @@ def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
                         if(happy_bull < max(happy_com)):
                                 pref = poss[:,best_i]
                                 output = outcome_com
-                                for j in range(0,n):
-                                        happiness += happiness_level(j,com_pref_matrix,outcome_com)
+                                happiness = sum(happy_com)
                                 #tuple = (poss[:,happy_com.index(max(happy_com))],outcome_com,happiness_level(i,com_pref_matrix,outcome_com))
                         else:
                                 pref = pref_bull
                                 output = outcome_bull
                                 for j in range(0, n):
                                         happiness += happiness_level(j,bull_pref_matrix,outcome_bull)
+                elif (happy_orig < max(happy_com)):
+                        # Compromising better than bullet?
+                        if (max(happy_com) < happy_bull):
+                                pref = pref_bull
+                                output = outcome_bull
+                                for j in range(0, n):
+                                        happiness += happiness_level(j, bull_pref_matrix, outcome_bull)
+                        else:
+                                pref = poss[:, best_i]
+                                output = outcome_com
+                                happiness = sum(happy_com)
+                                # tuple = (poss[:,happy_com.index(max(happy_com))],outcome_com,happiness_level(i,com_pref_matrix,outcome_com))
+
                 else:
                         pref = pref_matrix[:,i].copy()
                         output = ranked_outcome
                         for j in range(0, n):
                                 happiness += happiness_level(j,pref_matrix,ranked_outcome)
-                tuple = (str(pref), str(output), happiness, happiness_level(i,pref_matrix,output)-happy_orig)
-                print("Output: (preferences, output, happiness, happiness-gain)")
-                print("preferences, output: highest number preferred")
-                print(tuple)
-                print("RESULT BEFORE: " + str(ranked_outcome))
+                new_prefs = pref_matrix.copy()
+                new_prefs[:,i] = pref
+                tuple = (str(pref), str(output), happiness, happiness_level(i,new_prefs,output)-happy_orig)
+                if(tuple[3] == 0):
+                        print("NO STRATEGIC IMPROVEMENT POSSIBLE")
+                else:
+                        print("Output: (preferences, output, overall-happiness, personal-gain)")
+                        print("preferences, output: highest number preferred, personal-gain<=0 means no strategic improvement possible")
+                        print(tuple)
+                        print("  "+str(pref_matrix[:, i])+" ,  "+str(ranked_outcome)+" <===== Initial preference + results")
 
 
 
@@ -201,7 +220,6 @@ def get_alternatives(pref_vector):
         return list(itertools.permutations(pref_vector))
 
 def compromising_vote(pref_vector):
-        print(max(pref_vector))
         best = np.argmax(pref_vector)
         perm = get_alternatives(pref_vector[:])
 
@@ -224,7 +242,7 @@ print("Preferences")
 print(preferences)
 print("=================")
 print("Voting scheme")
-print(voting_for_two)
+print(anti_plurality_voting)
 #print(happiness_level(i, new_pref_matrix, outcome))
 voting_analysis(preferences,voting_for_two)
 
