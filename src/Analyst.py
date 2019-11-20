@@ -108,6 +108,7 @@ def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("STRATEGIC VOTING OPTIONS")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~")
+        num_strategic_improvements = 0
         #For each voter
         for i in range(0,n):
                 #Bullet
@@ -189,6 +190,8 @@ def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
                 new_prefs = pref_matrix.copy()
                 new_prefs[:,i] = pref
                 tuple = (str(pref), str(output), happiness, happiness_level(i,new_prefs,output)-happy_orig)
+
+
                 if(tuple[3] == 0):
                         print("NO STRATEGIC IMPROVEMENT POSSIBLE")
                 else:
@@ -196,8 +199,11 @@ def strategic_voting(pref_matrix, voting_scheme, ranked_outcome):
                         print("preferences, output: highest number preferred, personal-gain<=0 means no strategic improvement possible")
                         print(tuple)
                         print("  "+str(pref_matrix[:, i])+" ,  "+str(ranked_outcome)+" <===== Initial preference + results")
+                        num_strategic_improvements = num_strategic_improvements + 1
 
-
+        print("..........................................")
+        print("STRATEGIC VOTING RISK: " + str(num_strategic_improvements / n))
+        print("..........................................")
 
 #Ranks a given vector based on the values, ranked from 1->n with 1 being the worst rank
 def rank_vector(vector):
